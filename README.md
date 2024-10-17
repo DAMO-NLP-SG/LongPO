@@ -8,6 +8,6 @@
   
 3. Replace the Trainer class into our custom Ulysses Trainer.
   
-  1. LongPO Trainer: `LongDPOFullMTJointUlyssesTrainer`
+  - LongPO Trainer: `LongDPOFullMTJointUlyssesTrainer`
     
-  2. SFT Trainer using Ulysses: `LongSFTKLJointUlyssesTrainer`: Note that this Trainer uses our LongPO data format with a custom KL divergence. To access the naive SFT loss, refer to the chosen lm loss here.
+  - SFT Trainer using Ulysses: `LongSFTKLJointUlyssesTrainer`: Note that this Trainer uses our LongPO data format with a custom KL divergence. To access the naive SFT loss, refer to the chosen lm loss here.
