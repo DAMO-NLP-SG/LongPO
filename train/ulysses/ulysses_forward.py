@@ -273,34 +273,34 @@ def _ulysses_flash_attention_forward(
     # print("Key Shape  After:", key_states.shape)
     # Contains at least one padding token in the sequence
     
-    # if attention_mask is not None:
-    #     batch_size = query_states.shape[0]
-    #     query_length = query_states.size(1)
-    #     query_states, key_states, value_states, indices_q, cu_seq_lens, max_seq_lens = _upad_input(
-    #         query_states, key_states, value_states, attention_mask, query_length
-    #     )
-    #     cu_seqlens_q, cu_seqlens_k = cu_seq_lens
-    #     max_seqlen_in_batch_q, max_seqlen_in_batch_k = max_seq_lens
+    if attention_mask is not None:
+        batch_size = query_states.shape[0]
+        query_length = query_states.size(1)
+        query_states, key_states, value_states, indices_q, cu_seq_lens, max_seq_lens = _upad_input(
+            query_states, key_states, value_states, attention_mask, query_length
+        )
+        cu_seqlens_q, cu_seqlens_k = cu_seq_lens
+        max_seqlen_in_batch_q, max_seqlen_in_batch_k = max_seq_lens
 
-    #     attn_output_unpad = flash_attn_varlen_func(
-    #         query_states,
-    #         key_states,
-    #         value_states,
-    #         cu_seqlens_q=cu_seqlens_q,
-    #         cu_seqlens_k=cu_seqlens_k,
-    #         max_seqlen_q=max_seqlen_in_batch_q,
-    #         max_seqlen_k=max_seqlen_in_batch_k,
-    #         dropout_p=dropout,
-    #         softmax_scale=softmax_scale,
-    #         causal=causal,
-    #         **flash_kwargs,
-    #     )
-    #     attn_output = pad_input(attn_output_unpad, indices_q, batch_size, query_length)
+        attn_output_unpad = flash_attn_varlen_func(
+            query_states,
+            key_states,
+            value_states,
+            cu_seqlens_q=cu_seqlens_q,
+            cu_seqlens_k=cu_seqlens_k,
+            max_seqlen_q=max_seqlen_in_batch_q,
+            max_seqlen_k=max_seqlen_in_batch_k,
+            dropout_p=dropout,
+            softmax_scale=softmax_scale,
+            causal=causal,
+            **flash_kwargs,
+        )
+        attn_output = pad_input(attn_output_unpad, indices_q, batch_size, query_length)
 
-    # else:
-    attn_output = flash_attn_func(
-        query_states, key_states, value_states, dropout, softmax_scale=softmax_scale, causal=causal, **flash_kwargs
-    )
+    else:
+        attn_output = flash_attn_func(
+            query_states, key_states, value_states, dropout, softmax_scale=softmax_scale, causal=causal, **flash_kwargs
+        )
     attn_output = apply_ulysses(attn_output, 1, 2)
     return attn_output
 

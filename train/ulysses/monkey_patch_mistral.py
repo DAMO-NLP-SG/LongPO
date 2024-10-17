@@ -202,10 +202,7 @@ def mistral_forward(
 
 
 
-
-
-
-def replace_attn_with_ring_attn():
+def replace_attn_with_sequence_parallel_attn():
     cuda_major, cuda_minor = torch.cuda.get_device_capability()
     if cuda_major < 8:
         warnings.warn(

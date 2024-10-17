@@ -33,5 +33,5 @@ class TrainingArguments(transformers.TrainingArguments):
             "help": "Maximum sequence length. Sequences will be right padded (and possibly truncated)."
         },
     )
-    use_ring_attention: bool = field(default=False)
+    use_sequence_parallel: bool = field(default=False)
     dpo_lambda: float = field(default=0.1)

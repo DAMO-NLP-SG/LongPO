@@ -959,7 +959,7 @@ class LongDPOTrainer(DPOTrainer):
                         _,
                         _,
                     ) = self.concatenated_forward(self.ref_model, batch, ref_mode=True)
-        # if self.args.use_ring_attention:
+        # if self.args.use_sequence_parallel:
         torch.distributed.all_reduce(policy_chosen_logps, op=torch.distributed.ReduceOp.SUM)
         torch.distributed.all_reduce(policy_rejected_logps, op=torch.distributed.ReduceOp.SUM)
         torch.distributed.all_reduce(reference_chosen_logps, op=torch.distributed.ReduceOp.SUM)
@@ -1252,7 +1252,7 @@ class LongDPOHybridTrainer(LongDPOTrainer):
             "input_ids": concatenated_batch["concatenated_input_ids"],
             "attention_mask": concatenated_batch["concatenated_attention_mask"],
         }
-        if self.args.use_ring_attention:
+        if self.args.use_sequence_parallel:
             position_ids = inputs.get("position_ids", None)
             if position_ids is None:
                 seq_length = inputs["input_ids"].size(1)
@@ -1410,7 +1410,7 @@ class LongDPORingTrainer(LongDPOTrainer):
             "input_ids": concatenated_batch["concatenated_input_ids"],
             "attention_mask": concatenated_batch["concatenated_attention_mask"],
         }
-        if self.args.use_ring_attention:
+        if self.args.use_sequence_parallel:
             position_ids = inputs.get("position_ids", None)
             if position_ids is None:
                 seq_length = inputs["input_ids"].size(1)
@@ -1615,7 +1615,7 @@ class LongDPOUlyssesTrainer(LongDPOTrainer):
             "input_ids": concatenated_batch["concatenated_input_ids"],
             "attention_mask": concatenated_batch["concatenated_attention_mask"],
         }
-        if self.args.use_ring_attention:
+        if self.args.use_sequence_parallel:
             position_ids = inputs.get("position_ids", None)
             if position_ids is None:
                 seq_length = inputs["input_ids"].size(1)
@@ -1769,7 +1769,7 @@ class LongDPOJointUlyssesTrainer(LongDPOUlyssesTrainer):
     #         "input_ids": concatenated_batch["concatenated_input_ids"],
     #         "attention_mask": concatenated_batch["concatenated_attention_mask"],
     #     }
-    #     if self.args.use_ring_attention:
+    #     if self.args.use_sequence_parallel:
     #         position_ids = inputs.get("position_ids", None)
     #         if position_ids is None:
     #             seq_length = inputs["input_ids"].size(1)
@@ -1853,7 +1853,7 @@ class LongDPOJointUlyssesTrainer(LongDPOUlyssesTrainer):
                         _,
                         _,
                     ) = self.concatenated_forward(self.ref_model, batch, ref_mode=True)
-        # if self.args.use_ring_attention:
+        # if self.args.use_sequence_parallel:
         torch.distributed.all_reduce(policy_chosen_logps, op=torch.distributed.ReduceOp.SUM)
         torch.distributed.all_reduce(policy_rejected_logps, op=torch.distributed.ReduceOp.SUM)
         torch.distributed.all_reduce(reference_chosen_logps, op=torch.distributed.ReduceOp.SUM)
@@ -1959,7 +1959,7 @@ class LongDPOFullJointUlyssesTrainer(LongDPOUlyssesTrainer):
                         _,
                         _,
                     ) = self.concatenated_forward(self.ref_model, batch, ref_mode=True)
-        # if self.args.use_ring_attention:
+        # if self.args.use_sequence_parallel:
         torch.distributed.all_reduce(policy_chosen_logps, op=torch.distributed.ReduceOp.SUM)
         torch.distributed.all_reduce(policy_rejected_logps, op=torch.distributed.ReduceOp.SUM)
         torch.distributed.all_reduce(reference_chosen_logps, op=torch.distributed.ReduceOp.SUM)
@@ -2137,7 +2137,7 @@ class LongDPOFullMTFixedJointUlyssesTrainer(LongDPOFullJointUlyssesTrainer):
             "input_ids": concatenated_batch["concatenated_input_ids"],
             "attention_mask": concatenated_batch["concatenated_attention_mask"],
         }
-        if self.args.use_ring_attention:
+        if self.args.use_sequence_parallel:
             position_ids = inputs.get("position_ids", None)
             if position_ids is None:
                 seq_length = inputs["input_ids"].size(1)
@@ -2412,7 +2412,7 @@ class LongDPOFullMTFixedJointUlyssesTrainer(LongDPOFullJointUlyssesTrainer):
                         _,
                         # _,
                     ) = self.concatenated_forward(self.ref_model, batch, ref_mode=True)
-        # if self.args.use_ring_attention:
+        # if self.args.use_sequence_parallel:
         # torch.distributed.all_reduce(policy_chosen_logps, op=torch.distributed.ReduceOp.SUM)
         # torch.distributed.all_reduce(policy_rejected_logps, op=torch.distributed.ReduceOp.SUM)
         dist.all_reduce(reference_chosen_logps, op=torch.distributed.ReduceOp.SUM)
@@ -2534,7 +2534,7 @@ class LongDPOFullMTJointUlyssesTrainer(LongDPOFullJointUlyssesTrainer):
             "input_ids": concatenated_batch["concatenated_input_ids"],
             "attention_mask": concatenated_batch["concatenated_attention_mask"],
         }
-        if self.args.use_ring_attention:
+        if self.args.use_sequence_parallel:
             position_ids = inputs.get("position_ids", None)
             if position_ids is None:
                 seq_length = inputs["input_ids"].size(1)
@@ -2655,7 +2655,7 @@ class LongDPOFullMTJointUlyssesTrainer(LongDPOFullJointUlyssesTrainer):
                         _,
                         _,
                     ) = self.long_concatenated_forward(self.ref_model, batch, ref_mode=True)
-        # if self.args.use_ring_attention:
+        # if self.args.use_sequence_parallel:
         torch.distributed.all_reduce(policy_chosen_logps, op=torch.distributed.ReduceOp.SUM)
         torch.distributed.all_reduce(policy_rejected_logps, op=torch.distributed.ReduceOp.SUM)
         torch.distributed.all_reduce(reference_chosen_logps, op=torch.distributed.ReduceOp.SUM)
@@ -2732,325 +2732,6 @@ class LongDPOJointSeqUlyssesTrainer(LongDPOJointUlyssesTrainer):
 
 
 
-class LongSFTJointUlyssesTrainer(LongDPOFullJointUlyssesTrainer):
-
-    def get_ce_loss(self, logits, labels, reduction='none'):
-        # if labels is not None:
-            # Shift so that tokens < n predict n
-        # shift_logits = logits[..., :-1, :].contiguous()
-        shift_labels = labels[..., 1:].contiguous()
-        # shift_logits = logits.clone().detach()
-        if logits.shape[1] != shift_labels.shape[-1]:
-            shift_logits = logits[:, :-1, :].contiguous()
-        else:
-            shift_logits = logits
-        # Flatten the tokens
-        loss_fct = CrossEntropyLoss(inplace_backward=True, reduction=reduction)
-        shift_logits = shift_logits.view(-1, logits.shape[-1])
-        shift_labels = shift_labels.view(-1)
-        # Enable model parallelism
-        shift_labels = shift_labels.to(shift_logits.device)
-        ce_loss = loss_fct(shift_logits, shift_labels)
-        return ce_loss
-    
-    def gather_logits(self, local_logits, rank, world_size):
-        """
-        Gather logits from all GPUs.
-        
-        Args:
-        local_logits: Tensor of shape (local_batch_size, seq_len, vocab_size)
-        rank: The rank of the current process
-        world_size: Total number of processes
-        
-        Returns:
-        Tensor of shape (total_batch_size, seq_len, vocab_size)
-        """
-
-        
-        # Create a list to hold logits from all processes
-        output_tensors = [torch.zeros_like(local_logits) for _ in range(world_size)]
-        
-        # Gather logits from all processes
-        dist.all_gather(output_tensors, local_logits)
-        
-        # Concatenate the gathered tensors
-        return torch.cat(output_tensors, dim=1)
-
-    # def calculate_kl_divergence_full(self, logits, ref_logits, rank, world_size):
-    #     """
-    #     Calculate KL divergence for the full sequences across all GPUs.
-        
-    #     Args:
-    #     local_logits1: Partial logits from model 1 on the current GPU
-    #     local_logits2: Partial logits from model 2 on the current GPU
-    #     rank: The rank of the current process
-    #     world_size: Total number of processes
-        
-    #     Returns:
-    #     KL divergence loss
-    #     """
-    #     # Gather logits from all GPUs
-    #     full_logits = self.gather_logits(logits, rank, world_size)
-    #     full_ref_logits = self.gather_logits(ref_logits, rank, world_size)
-        
-    #     # Ensure the logits are on the same device
-    #     # device = full_logits1.device
-    #     # full_logits2 = full_logits2.to(device)
-
-    #     # Calculate KL divergence
-    #     logprob = F.log_softmax(full_logits, dim=-1)
-    #     ref_logprob = F.log_softmax(full_ref_logits, dim=-1)
-    #     # kl_div = F.kl_div(probs2.log(), probs1, reduction='batchmean')
-    #     kl_penalty = F.kl_div(ref_logprob, logprob, log_target=True, reduction="none").sum(-1)
-    #     return kl_penalty
-    @staticmethod
-    def preprocess_longpo_inputs(
-        batch: Dict[str, Union[List, torch.LongTensor]],
-        label_pad_token_id: int = -100,
-        padding_value: int = 0,
-        device: Optional[torch.device] = None,
-        ref_mode: bool = False,
-    ) -> Dict[str, torch.LongTensor]:
-        """Concatenate the chosen and rejected inputs into a single tensor.
-
-        Args:
-            batch: A batch of data. Must contain the keys 'chosen_input_ids' and 'rejected_input_ids', which are tensors of shape (batch_size, sequence_length).
-            is_encoder_decoder: Whether the model is an encoder-decoder model.
-            label_pad_token_id: The label pad token id.
-            padding_value: The padding value to use for the concatenated inputs_ids.
-            device: The device for the concatenated inputs.
-
-        Returns:
-            A dictionary containing the concatenated inputs under the key 'concatenated_input_ids'.
-        """
-        res_batch = {}
-        prefix = "ref_" if ref_mode else ""
-        # print(batch[f"{prefix}chosen_input_ids"].shape)
-        # if is_encoder_decoder:
-        #     max_length = max(batch[f"{prefix}chosen_input_ids"].shape[1], batch[f"{prefix}rejected_input_ids"].shape[1])
-        #     # max_length = max(batch["chosen_labels"].shape[1], batch["rejected_labels"].shape[1])
-        # else:
-        max_length = max(batch[f"{prefix}chosen_input_ids"].shape[1], batch[f"{prefix}rejected_input_ids"].shape[1])
-            # max_length = max(batch["chosen_input_ids"].shape[1], batch["rejected_input_ids"].shape[1])
-        world_size = dist.get_world_size()
-        # print(batch[f"{prefix}chosen_input_ids"].shape)
-        if max_length % world_size != 0:
-            max_length += world_size - (max_length % world_size)
-        if ref_mode:
-            print("ref_length:", max_length)
-        else:
-            print("long length:", max_length)
-        for k in batch:
-            # if k.startswith("chosen") and isinstance(batch[k], torch.Tensor):
-            if k.startswith(f"{prefix}chosen") and isinstance(batch[k], torch.Tensor):
-                if "labels" in k:
-                    pad_value = label_pad_token_id
-                elif k.endswith("_input_ids"):
-                    pad_value = padding_value
-                elif k.endswith("_attention_mask"):
-                    pad_value = 0
-                # concatenated_key = k.replace(f"{prefix}chosen", "concatenated")
-                res_batch[k] = pad_to_length(batch[k], max_length, pad_value=pad_value)
-
-        return res_batch
-
-    def calculate_kl_divergence(self, policy_logit, ref_logit, policy_logit_mask, ref_logit_mask):
-        """
-        Calculate KL divergence between policy_logit and ref_logit based on the given masks.
-        
-        Args:
-        policy_logit (torch.Tensor): Logits from LLM output with shape (B, S1, V)
-        ref_logit (torch.Tensor): Logits with shape (nB, S2, V)
-        policy_logit_mask (torch.Tensor): Binary mask with shape (B, S1) indicating positions of ref_logit samples in policy_logit
-        ref_logit_mask (torch.Tensor): Binary mask with shape (nB, S2) indicating valid positions in ref_logit
-        
-        Returns:
-        torch.Tensor: KL divergence for each batch, shape (B,)
-        """
-        B, S1, V = policy_logit.shape
-        nB, S2, V = ref_logit.shape
-        n = nB // B  # number of samples in ref_logit for each sample in policy_logit
-
-        # Reshape ref_logit and ref_logit_mask to match the batch size of policy_logit
-        ref_logit = ref_logit.view(B, n, S2, V)
-        ref_logit_mask = ref_logit_mask.view(B, n, S2)
-
-        # Create a probability distribution from the logits
-        probs1 = F.log_softmax(policy_logit, dim=-1)
-        probs2 = F.log_softmax(ref_logit, dim=-1)
-
-        kl_div = torch.zeros((B,), device=policy_logit.device)
-
-        for b in range(B):
-            # Find the contiguous segments where policy_logit_mask is 1
-            mask_b = policy_logit_mask[b]
-            segments = torch.where(mask_b[1:] != mask_b[:-1])[0] + 1
-            segments = torch.cat([torch.tensor([0], device=policy_logit_mask.device), segments, torch.tensor([S1], device=policy_logit_mask.device)])
-            
-            start_idx = 0
-            for i in range(n):
-                # Find the start and end of the current segment in policy_logit
-                while start_idx < len(segments) - 1 and mask_b[segments[start_idx]] == 0:
-                    start_idx += 1
-                if start_idx >= len(segments) - 1:
-                    break
-                
-                start1 = segments[start_idx]
-                end1 = segments[start_idx + 1]
-                
-                # Find the unmasked region in ref_logit
-                valid_mask = ref_logit_mask[b, i]
-                start2 = valid_mask.nonzero()[0][0]
-                end2 = valid_mask.nonzero()[-1][0] + 1
-
-                # Calculate the length of the overlap
-                valid_length = min(end1 - start1, end2 - start2)
-                
-                # Extract the relevant probabilities from probs1 and probs2
-                logprob = probs1[b, start1:start1+valid_length]
-                ref_logprob = probs2[b, i, start2:start2+valid_length]
-
-                # Calculate KL divergence
-                kl = F.kl_div(ref_logprob, logprob, log_target=True, reduction="none").sum(-1)
-
-                # Sum the KL divergence for this segment
-                kl_div[b] += kl.mean(dim=-1)
-                
-                start_idx += 1
-
-            # Average over the number of samples
-            kl_div[b] /= n
-
-        return kl_div
-
-
-
-    def long_chosen_forward(
-        self, model: nn.Module, batch: Dict[str, Union[List, torch.LongTensor]], ref_mode=False
-    ) -> Tuple[torch.FloatTensor, torch.FloatTensor, torch.FloatTensor, torch.FloatTensor]:
-        """Run the given model on the given batch of inputs, concatenating the chosen and rejected inputs together.
-
-        We do this to avoid doing two forward passes, because it's faster for FSDP.
-        """
-        # concatenated_batch = self.concatenated_inputs(
-        #     batch,
-        #     is_encoder_decoder=self.is_encoder_decoder,
-        #     label_pad_token_id=self.label_pad_token_id,
-        #     padding_value=self.padding_value,
-        #     device=self.accelerator.device,
-        #     ref_mode=ref_mode,
-        # )
-        # len_chosen = batch["chosen_labels"].shape[0]
-
-        batch = self.preprocess_longpo_inputs(
-            batch,
-            label_pad_token_id=self.label_pad_token_id,
-            padding_value=self.padding_value,
-            device=self.accelerator.device,
-            ref_mode=ref_mode,
-        )
-
-        prefix = "ref_" if ref_mode else ""
-        len_chosen = batch[f"{prefix}chosen_labels"].shape[0]
-
-
-        inputs = {
-            "input_ids": batch[f"{prefix}chosen_input_ids"],
-            "attention_mask": batch[f"{prefix}chosen_attention_mask"],
-        }
-        if self.args.use_ring_attention:
-            position_ids = inputs.get("position_ids", None)
-            if position_ids is None:
-                seq_length = inputs["input_ids"].size(1)
-                inputs['position_ids'] = torch.arange(seq_length).unsqueeze(0).expand(inputs["input_ids"].shape[0], -1)
-                # position_ids = (
-                #     torch.arange(self.args.seq_length).unsqueeze(0).expand(input_ids.shape[0], -1)
-                # )
-            for obj in inputs:
-                # Note: Don't split attention mask for ulysses
-                # if obj in ['input_ids', 'labels', 'position_ids', "attention_mask"]:
-                if obj in ['input_ids', 'labels', 'position_ids']:
-                    inputs[obj] = self.extract_local(
-                        inputs[obj],
-                        self.accelerator.process_index,
-                        self.accelerator.num_processes, 
-                        self.accelerator.device
-                    )
-        # print(inputs['attention_mask'].shape)
-        local_logits = model(
-            **inputs,
-        ).logits
-        # print(all_logits[:,-1000:,:10])
-        # num_nans = torch.isnan(all_logits).sum().item
-        # print(f"Num of Nans: {num_nans}, Num of paddings: {torch.eq(inputs['input_ids'], 151643).sum().item()}")
-        # print(f"Rank: {self.accelerator.process_index}, Processes: {self.accelerator.num_processes}, {all_logits[0,-10:,:10]}")
-        
-
-        local_labels = self.extract_local_label(
-            batch[f"{prefix}chosen_labels"],
-            self.accelerator.process_index,
-            self.accelerator.num_processes, 
-            self.accelerator.device
-        )
-        # kl_mask = local_labels != self.label_pad_token_id
-        # if self.accelerator.process_index != self.accelerator.num_processes - 1:
-        #     kl_mask = kl_mask[:, :-1]
-        all_logits = self.gather_logits(local_logits, self.accelerator.process_index, self.accelerator.num_processes)
-        dist.barrier()
-        all_logit_mask = batch[f"{prefix}chosen_labels"]!=self.label_pad_token_id
-        if ref_mode:
-            return all_logits, all_logit_mask
-
-        loss_mask = local_labels[:, 1:] != self.label_pad_token_id
-        # print(local_labels.size(), local_logits.size())
-        local_ce_loss = self.get_ce_loss(local_logits, local_labels, reduction='none')
-        batch_size, seq_length = local_labels.shape
-
-        chosen_loss = (local_ce_loss * loss_mask).sum(dim=-1)
-        mask_sum = loss_mask.sum(dim=-1)
-        torch.distributed.all_reduce(chosen_loss, op=torch.distributed.ReduceOp.SUM)
-        torch.distributed.all_reduce(mask_sum, op=torch.distributed.ReduceOp.SUM)
-        # global_mask_sum = global_loss_mask[:len_chosen].sum(-1)
-        chosen_loss = chosen_loss / mask_sum
-
-        # all_logits = self.gather_logits(local_logits, self.accelerator.process_index, self.accelerator.num_processes)
-        dist.barrier()
-        
-
-        return chosen_loss, all_logits, all_logit_mask
-    
-
-    def get_batch_loss_metrics(
-            self, 
-            model, 
-            batch: Dict[str, List | torch.LongTensor], 
-            train_eval: Literal["train", "eval"] = "train",
-    ):
-        policy_sft_loss, policy_logits, policy_logit_mask = self.long_chosen_forward(model, batch, ref_mode=False)
-
-        pair_num = 1
-        for k in batch:
-            # if k.startswith("chosen") and isinstance(batch[k], torch.Tensor):
-            if k.startswith(f"ref_") and isinstance(batch[k], torch.Tensor):
-                pair_num = batch[k].shape[1]
-                # if batch[k].shape[0] == 1 and batch[k].shape[1] == 4:
-                # if pair_num == 1:
-                batch[k] = batch[k].squeeze(dim=0)
-        # print("Ref shape: ", batch["ref_chosen_input_ids"].shape)
-        ref_logits, ref_logit_mask = self.long_chosen_forward(model, batch, ref_mode=True)
-        # policy_logit_mask = batch["chosen_labels"] != self.label_pad_token_id
-        # ref_logit_mask = batch["ref_chosen_labels"] != self.label_pad_token_id
-        # print(f"logits shape: {policy_logits.shape[-2]}, ref_logits shape: {ref_logits.shape[-2]}, policy_mask shape: {policy_logit_mask.shape[-1]}, ref_mask shape: {ref_logit_mask.shape[-1]}")
-        kl_penalty = self.calculate_kl_divergence(policy_logits, ref_logits, policy_logit_mask, ref_logit_mask)
-        loss = policy_sft_loss + self.beta * kl_penalty
-        # print(policy_sft_loss.shape, kl_penalty.shape)
-        metrics = {}
-        metrics["sft_loss"] = policy_sft_loss.mean().item()
-        metrics["kl_penalty"] = kl_penalty
-        return loss.mean(), metrics
-
-
-
 class LongSFTKLJointUlyssesTrainer(LongDPOFullJointUlyssesTrainer):
 
     def get_ce_loss(self, logits, labels, reduction='none'):
@@ -3095,33 +2776,7 @@ class LongSFTKLJointUlyssesTrainer(LongDPOFullJointUlyssesTrainer):
         # Concatenate the gathered tensors
         return torch.cat(output_tensors, dim=1)
 
-    # def calculate_kl_divergence_full(self, logits, ref_logits, rank, world_size):
-    #     """
-    #     Calculate KL divergence for the full sequences across all GPUs.
-        
-    #     Args:
-    #     local_logits1: Partial logits from model 1 on the current GPU
-    #     local_logits2: Partial logits from model 2 on the current GPU
-    #     rank: The rank of the current process
-    #     world_size: Total number of processes
-        
-    #     Returns:
-    #     KL divergence loss
-    #     """
-    #     # Gather logits from all GPUs
-    #     full_logits = self.gather_logits(logits, rank, world_size)
-    #     full_ref_logits = self.gather_logits(ref_logits, rank, world_size)
-        
-    #     # Ensure the logits are on the same device
-    #     # device = full_logits1.device
-    #     # full_logits2 = full_logits2.to(device)
 
-    #     # Calculate KL divergence
-    #     logprob = F.log_softmax(full_logits, dim=-1)
-    #     ref_logprob = F.log_softmax(full_ref_logits, dim=-1)
-    #     # kl_div = F.kl_div(probs2.log(), probs1, reduction='batchmean')
-    #     kl_penalty = F.kl_div(ref_logprob, logprob, log_target=True, reduction="none").sum(-1)
-    #     return kl_penalty
     @staticmethod
     def preprocess_longpo_inputs(
         batch: Dict[str, Union[List, torch.LongTensor]],
@@ -3277,7 +2932,7 @@ class LongSFTKLJointUlyssesTrainer(LongDPOFullJointUlyssesTrainer):
             "input_ids": batch[f"{prefix}chosen_input_ids"],
             "attention_mask": batch[f"{prefix}chosen_attention_mask"],
         }
-        if self.args.use_ring_attention:
+        if self.args.use_sequence_parallel:
             position_ids = inputs.get("position_ids", None)
             if position_ids is None:
                 seq_length = inputs["input_ids"].size(1)
@@ -3299,18 +2954,19 @@ class LongSFTKLJointUlyssesTrainer(LongDPOFullJointUlyssesTrainer):
         local_logits = model(
             **inputs,
         ).logits
-        # print(all_logits[:,-1000:,:10])
-        # num_nans = torch.isnan(all_logits).sum().item
-        # print(f"Num of Nans: {num_nans}, Num of paddings: {torch.eq(inputs['input_ids'], 151643).sum().item()}")
-        # print(f"Rank: {self.accelerator.process_index}, Processes: {self.accelerator.num_processes}, {all_logits[0,-10:,:10]}")
-        
 
+        # the labels should be of local sequence length + 1 except the last local sequence.
         local_labels = self.extract_local_label(
             batch[f"{prefix}chosen_labels"],
             self.accelerator.process_index,
             self.accelerator.num_processes, 
             self.accelerator.device
         )
+
+
+        """
+            This is our custom KL, skip it if using naive SFT only.
+        """
         kl_mask = local_labels != self.label_pad_token_id
         if self.accelerator.process_index != self.accelerator.num_processes - 1:
             kl_mask = kl_mask[:, :-1]
@@ -3324,19 +2980,27 @@ class LongSFTKLJointUlyssesTrainer(LongDPOFullJointUlyssesTrainer):
         if ref_mode:
             return local_probs, kl_mask
 
+
+        """
+            Calculate language modeling / SFT loss
+            mask: 1 on answers tokens (need loss) and 0 on others.
+        """
         loss_mask = local_labels[:, 1:] != self.label_pad_token_id
-        # print(local_labels.size(), local_logits.size())
+        # get the loss for local sequence  without reduction
         local_ce_loss = self.get_ce_loss(local_logits, local_labels, reduction='none')
         batch_size, seq_length = local_labels.shape
 
+        # get the answer tokens loss sum in local sequence (if any)
         chosen_loss = (local_ce_loss * loss_mask).sum(dim=-1)
         mask_sum = loss_mask.sum(dim=-1)
+
+        # gather the loss and mask sum from all GPUs to recover the full sentence loss
         torch.distributed.all_reduce(chosen_loss, op=torch.distributed.ReduceOp.SUM)
         torch.distributed.all_reduce(mask_sum, op=torch.distributed.ReduceOp.SUM)
-        # global_mask_sum = global_loss_mask[:len_chosen].sum(-1)
+        
+        # The final loss = answer tokens loss sum / answer tokens count
         chosen_loss = chosen_loss / mask_sum
 
-        # all_logits = self.gather_logits(local_logits, self.accelerator.process_index, self.accelerator.num_processes)
         dist.barrier()
         
 

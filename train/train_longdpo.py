@@ -18,21 +18,33 @@ import wandb
 logger = logging.getLogger(__name__)
 from trl import SFTTrainer
 from ring_trainer import RingSFTTrainer
-from datasets import load_dataset
+from datasets import load_dataset, load_from_disk
 
 IGNORE_TOKEN_ID = LabelSmoother.ignore_index
 import os
-os.environ["WANDB_MODE"] = "disabled"
+# os.environ["WANDB_MODE"] = "disabled"
 from utils import apply_chat_template, CustomTrainer, get_dataset, CustomSFTTrainer, concat_long_alpaca, concat_long_self_instruct, get_long_dpo_dataset
-from longdpo_trainer import LongDPOTrainer, LongDPORingTrainer, LongDPOUlyssesTrainer
+from longdpo_trainer import (
+    LongDPOTrainer,
+    LongDPORingTrainer,
+    LongDPOUlyssesTrainer,
+    LongDPOJointUlyssesTrainer,
+    LongDPOFullJointUlyssesTrainer,
+    LongDPOFullMTJointUlyssesTrainer,
+    LongDPOFullMTFixedJointUlyssesTrainer,
+    LongSFTJointUlyssesTrainer,
+    LongSFTKLJointUlyssesTrainer,
+
+)
 
 # from ring_monkey_patch import replace_attn_with_ring_attn
 
 # replace_attn_with_ring_attn()
 
-from ulysses.monkey_patch import replace_attn_with_ring_attn
+# from ulysses.monkey_patch_llama3 import replace_attn_with_ring_attn
+from ulysses.monkey_patch_mistral import replace_attn_with_sequence_parallel_attn
 
-replace_attn_with_ring_attn()
+replace_attn_with_sequence_parallel_attn()
 
 local_rank = None
 
@@ -62,105 +74,8 @@ def trainer_save_model_safe(trainer: transformers.Trainer):
         trainer.save_model()
 
 
-def build_clex_args(config, model_args):
-    config.log_scale = model_args.log_scale
-    config._flash_attn_2_enabled = model_args.use_flashattn
-    config.rope_scaling = {
-        "type": model_args.scaling_type,
-        "max_factor": model_args.max_factor,
-        "param_factor": model_args.param_factor,
-        "factor": 1,
-        "time_dt": model_args.time_dt
-    }
-    
-# def calculate_perplexity(model, tokenizer, dataset, batch_size):
-#     model.eval()
-
-#     total_ppl = 0
-#     total_tokens = 0
-
-#     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size)
-
-#     for batch in dataloader:
-#         # encoded_batch = tokenizer.batch_encode_plus(
-#         #     batch["text"], padding=True, truncation=True, return_tensors="pt"
-#         # )
-#         # print(batch["input_ids"])
-#         input_ids = torch.tensor(batch["input_ids"]).unsqueeze(dim=0).to("cuda")
-#         # attention_mask = batch["attention_mask"]
-
-#         with torch.no_grad():
-#             outputs = model(input_ids)
-
-#         loss = outputs.loss
-#         batch_ppl = torch.exp(loss)
-#         batch_tokens = input_ids.ne(tokenizer.pad_token_id).sum().item()
-
-#         total_ppl += batch_ppl.item() * batch_tokens
-#         total_tokens += batch_tokens
-
-#     average_ppl = total_ppl / total_tokens
-#     return average_ppl
 
 
-def calculate_perplexity(model, tokenizer, dataset, batch_size, config):
-    model.eval()
-
-    total_ppl = 0
-    total_tokens = 0
-    total_loss = 0.0
-    # total_loss
-    # from accelerate import Accelerator
-    # accelerator = Accelerator()
-    # device = accelerator.device
-    # model = model.to(device)
-
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size)
-    from tqdm import tqdm
-    for batch in tqdm(dataloader):
-        past = None
-        input_ids = batch["input_ids"]
-        chunks = [input_ids[i:i + 1] for i in range(0, len(input_ids), 1)]
-        batch_loss = 0.0
-        batch_tokens = 0
-        for chunk in chunks:
-            # input_ids = tokenizer.encode(chunk, add_special_tokens=True, truncation=True, padding="max_length", max_length=max_length)
-            # attention_mask = [1] * len(input_ids)
-
-            input_ids = torch.tensor(chunk).unsqueeze(0)
-
-            input_ids = input_ids.to(device="cuda" if torch.cuda.is_available() else "cpu")
-          
-
-            with torch.no_grad():
-                outputs = model(input_ids, past_key_values=past, use_cache=True, return_dict=True)
-
-            
-            logits = outputs.logits
-            shift_logits = logits[..., :-1, :].contiguous()
-            shift_labels = input_ids[..., 1:].contiguous()
-            # Flatten the tokens
-            from torch.nn import CrossEntropyLoss
-            loss_fct = CrossEntropyLoss()
-            shift_logits = shift_logits.view(-1, config.vocab_size)
-            shift_labels = shift_labels.view(-1)
-            # Enable model parallelism
-            shift_labels = shift_labels.to(shift_logits.device)
-            loss = loss_fct(shift_logits, shift_labels)
-            # loss = torch.nn.functional.cross_entropy(logits.view(-1, logits.shape[-1]), input_ids.view(-1))
-            # print(loss.tolist())
-            # batch_ppl = torch.exp(loss)
-            chunk_tokens = input_ids.ne(tokenizer.pad_token_id).sum().item()
-
-            batch_loss += loss.item() * chunk_tokens
-            batch_tokens += chunk_tokens
-            # Store the past key and value for the next iteration
-            past = outputs.past_key_values
-        total_loss += batch_loss
-        total_tokens += batch_tokens
-        print(batch_loss/batch_tokens)
-    average_ppl = np.exp(total_loss / total_tokens)
-    return average_ppl
 
 
 def train():
@@ -197,7 +112,7 @@ def train():
     config = AutoConfig.from_pretrained(
         model_args.model_name_or_path
     )
-    # config.rope_theta = model_args.rope_theta
+    config.rope_theta = model_args.rope_theta
     # config.sliding_window = training_args.model_max_length
     
     # from transformers import MistralForCausalLM
@@ -212,13 +127,10 @@ def train():
         torch_dtype=torch.bfloat16,
     )
     model.config.use_cache = False
-    # model.model.clex_layer.proj_func.reset_parameters()
-    # for name, param in model.named_parameters():
-    #     if "clex" in name:
-    #         param.requires_grad = False
+
 
     ref_model = AutoModelForCausalLM.from_pretrained(
-        "/mnt/workspace/ckpts/Mistral-7B-Instruct-v0.2",
+        model_args.ref_model_name_or_path,
         cache_dir=training_args.cache_dir,
         trust_remote_code=True,
         use_flash_attention_2=True,
@@ -227,6 +139,11 @@ def train():
     )
     ref_model.config.use_cache = False
 
+    # ref_model = model
+    # model.model.clex_layer.proj_func.reset_parameters()
+    # for name, param in model.named_parameters():
+    #     if "clex" in name:
+    #         param.requires_grad = False
     tokenizer = transformers.AutoTokenizer.from_pretrained(
         model_args.model_name_or_path,
         cache_dir=training_args.cache_dir,
@@ -235,11 +152,22 @@ def train():
         use_fast=False,
         trust_remote_code=True,
     )
-    tokenizer.pad_token = tokenizer.unk_token
+    if "mistral" in model_args.model_name_or_path.lower():
+        tokenizer.pad_token = tokenizer.unk_token
+    elif "llama" in model_args.model_name_or_path.lower():
+        tokenizer.pad_token = "<|end_of_text|>"
     # DEFAULT_CHAT_TEMPLATE = "{% for message in messages %}\n{% if message['role'] == 'user' %}\n{{ '<|user|>\n' + message['content'] + eos_token }}\n{% elif message['role'] == 'system' %}\n{{ '<|system|>\n' + message['content'] + eos_token }}\n{% elif message['role'] == 'assistant' %}\n{{ '<|assistant|>\n'  + message['content'] + eos_token }}\n{% endif %}\n{% if loop.last and add_generation_prompt %}\n{{ '<|assistant|>' }}\n{% endif %}\n{% endfor %}"
     # tokenizer.chat_template = DEFAULT_CHAT_TEMPLATE
     # raw_datasets = get_dataset(data_args.data_path, splits=["train_sft", "test_sft"])
-    train_dataset = get_long_dpo_dataset(data_args.data_path).shuffle(seed=42).select(list(range(10)))
+    train_dataset = load_from_disk(data_args.data_path).shuffle(seed=42)
+    # keys = train_dataset.column_names
+    # def convert_format(example):
+    #     for key in keys:
+    #         if len(example[key]) == 1:
+    #             example[key] = example[key][0]
+    #     return example
+
+    # train_dataset = train_dataset.map(convert_format, num_proc=60)
     eval_dataset = None
     # raw_datasets['train'] = concat_long_self_instruct(raw_datasets['train'])
     # #####################
@@ -247,26 +175,26 @@ def train():
     # #####################
     column_names = list(train_dataset.features)
     # train_dataset = train_dataset.map(apply_chat_template, fn_kwargs={"tokenizer": tokenizer, "task": "dpo"}, num_proc=40)
-    train_dataset = train_dataset.map(
-        apply_chat_template,
-        fn_kwargs={"tokenizer": tokenizer, "task": "dpo"},
-        num_proc=40,
-        remove_columns=column_names,
-        desc="Formatting comparisons with prompt template",
-    )
-    train_dataset = train_dataset.rename_columns(
-        {"text_prompt": "prompt", "text_short_prompt": "short_prompt", "text_chosen": "chosen", "text_rejected": "rejected"}
-    )
+    # train_dataset = train_dataset.map(
+    #     apply_chat_template,
+    #     fn_kwargs={"tokenizer": tokenizer, "task": "dpo"},
+    #     num_proc=40,
+    #     remove_columns=column_names,
+    #     desc="Formatting comparisons with prompt template",
+    # )
+    # train_dataset = train_dataset.rename_columns(
+    #     {"text_prompt": "prompt", "text_short_prompt": "short_prompt", "text_chosen": "chosen", "text_rejected": "rejected"}
+    # )
     # model.eval()
 
-    # perplexity = calculate_perplexity(model, tokenizer, dataset.predict_dataset, 1, config)
     # print("Perplexity:", perplexity)
 
     logger.info("*** Model loaded! ***")
 
     # ref_model = model
-
-    TRAINER_CLASS = LongDPOUlyssesTrainer if training_args.use_ring_attention else LongDPOTrainer
+    
+    # TRAINER_CLASS = LongDPOFullMTFixedJointUlyssesTrainer
+    TRAINER_CLASS = LongDPOFullMTJointUlyssesTrainer
     ########################
     # Initialize the Trainer
     ########################
@@ -280,7 +208,7 @@ def train():
         tokenizer=tokenizer,
         max_length=training_args.model_max_length,
         max_prompt_length=training_args.model_max_length,
-        dataset_num_proc=64
+        dataset_num_proc=96
     )
 
 
