@@ -10,7 +10,7 @@
   
   - LongPO Trainer: `LongDPOFullMTJointUlyssesTrainer`
     
-  - SFT Trainer using Ulysses: `LongSFTKLJointUlyssesTrainer`: Note that this Trainer uses our LongPO data format with a custom KL divergence. To access the naive SFT loss, refer to the chosen lm loss here.
+  - SFT Trainer using Ulysses: `LongSFTKLJointUlyssesTrainer`: Note that this Trainer uses our LongPO data format with a custom KL divergence. To access the naive SFT loss, refer to the chosen lm loss [here](https://github.com/DAMO-NLP-SG/LongPO/blob/e3ecf0c5a83ca540ee8957fb47fd16575db55a47/train/longdpo_trainer.py#L3002).
 
 4. Train Script:
 
