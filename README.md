@@ -21,7 +21,7 @@ export gradient_accumulation_steps=8
 export batch_size=1
 
 accelerate launch \
---config_file /mnt/workspace/gzchen/playground/accelerate_single_node_zero3.yaml \
+--config_file playground/accelerate_single_node_zero3.yaml \
 train/train_longpo.py \
     --model_name_or_path /path/to/model \
     --ref_model_name_or_path /path/to/model \

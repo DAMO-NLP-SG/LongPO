@@ -23,25 +23,12 @@ from datasets import load_dataset, load_from_disk
 IGNORE_TOKEN_ID = LabelSmoother.ignore_index
 import os
 # os.environ["WANDB_MODE"] = "disabled"
-from utils import apply_chat_template, CustomTrainer, get_dataset, CustomSFTTrainer, concat_long_alpaca, concat_long_self_instruct, get_long_dpo_dataset
+# from utils import apply_chat_template, CustomTrainer, get_dataset, CustomSFTTrainer, concat_long_alpaca, concat_long_self_instruct, get_long_dpo_dataset
 from longdpo_trainer import (
-    LongDPOTrainer,
-    LongDPORingTrainer,
-    LongDPOUlyssesTrainer,
-    LongDPOJointUlyssesTrainer,
-    LongDPOFullJointUlyssesTrainer,
-    LongDPOFullMTJointUlyssesTrainer,
-    LongDPOFullMTFixedJointUlyssesTrainer,
-    LongSFTJointUlyssesTrainer,
-    LongSFTKLJointUlyssesTrainer,
+    LongPOMTLMUlyssesTrainer
 
 )
 
-# from ring_monkey_patch import replace_attn_with_ring_attn
-
-# replace_attn_with_ring_attn()
-
-# from ulysses.monkey_patch_llama3 import replace_attn_with_ring_attn
 from ulysses.monkey_patch_mistral import replace_attn_with_sequence_parallel_attn
 
 replace_attn_with_sequence_parallel_attn()
@@ -113,10 +100,7 @@ def train():
         model_args.model_name_or_path
     )
     config.rope_theta = model_args.rope_theta
-    # config.sliding_window = training_args.model_max_length
-    
-    # from transformers import MistralForCausalLM
-    # device_map = {"": os.environ.get('LOCAL_RANK', '0')}
+
     model = AutoModelForCausalLM.from_pretrained(
         model_args.model_name_or_path,
         cache_dir=training_args.cache_dir,
@@ -129,6 +113,7 @@ def train():
     model.config.use_cache = False
 
 
+    ## Reference model would use original config
     ref_model = AutoModelForCausalLM.from_pretrained(
         model_args.ref_model_name_or_path,
         cache_dir=training_args.cache_dir,
@@ -139,11 +124,6 @@ def train():
     )
     ref_model.config.use_cache = False
 
-    # ref_model = model
-    # model.model.clex_layer.proj_func.reset_parameters()
-    # for name, param in model.named_parameters():
-    #     if "clex" in name:
-    #         param.requires_grad = False
     tokenizer = transformers.AutoTokenizer.from_pretrained(
         model_args.model_name_or_path,
         cache_dir=training_args.cache_dir,
@@ -156,45 +136,14 @@ def train():
         tokenizer.pad_token = tokenizer.unk_token
     elif "llama" in model_args.model_name_or_path.lower():
         tokenizer.pad_token = "<|end_of_text|>"
-    # DEFAULT_CHAT_TEMPLATE = "{% for message in messages %}\n{% if message['role'] == 'user' %}\n{{ '<|user|>\n' + message['content'] + eos_token }}\n{% elif message['role'] == 'system' %}\n{{ '<|system|>\n' + message['content'] + eos_token }}\n{% elif message['role'] == 'assistant' %}\n{{ '<|assistant|>\n'  + message['content'] + eos_token }}\n{% endif %}\n{% if loop.last and add_generation_prompt %}\n{{ '<|assistant|>' }}\n{% endif %}\n{% endfor %}"
-    # tokenizer.chat_template = DEFAULT_CHAT_TEMPLATE
-    # raw_datasets = get_dataset(data_args.data_path, splits=["train_sft", "test_sft"])
+
     train_dataset = load_from_disk(data_args.data_path).shuffle(seed=42)
-    # keys = train_dataset.column_names
-    # def convert_format(example):
-    #     for key in keys:
-    #         if len(example[key]) == 1:
-    #             example[key] = example[key][0]
-    #     return example
 
-    # train_dataset = train_dataset.map(convert_format, num_proc=60)
     eval_dataset = None
-    # raw_datasets['train'] = concat_long_self_instruct(raw_datasets['train'])
-    # #####################
-    # # Apply chat template
-    # #####################
-    column_names = list(train_dataset.features)
-    # train_dataset = train_dataset.map(apply_chat_template, fn_kwargs={"tokenizer": tokenizer, "task": "dpo"}, num_proc=40)
-    # train_dataset = train_dataset.map(
-    #     apply_chat_template,
-    #     fn_kwargs={"tokenizer": tokenizer, "task": "dpo"},
-    #     num_proc=40,
-    #     remove_columns=column_names,
-    #     desc="Formatting comparisons with prompt template",
-    # )
-    # train_dataset = train_dataset.rename_columns(
-    #     {"text_prompt": "prompt", "text_short_prompt": "short_prompt", "text_chosen": "chosen", "text_rejected": "rejected"}
-    # )
-    # model.eval()
-
-    # print("Perplexity:", perplexity)
 
     logger.info("*** Model loaded! ***")
 
-    # ref_model = model
-    
-    # TRAINER_CLASS = LongDPOFullMTFixedJointUlyssesTrainer
-    TRAINER_CLASS = LongDPOFullMTJointUlyssesTrainer
+    TRAINER_CLASS = LongPOMTLMUlyssesTrainer
     ########################
     # Initialize the Trainer
     ########################

@@ -175,6 +175,7 @@ def mistral_forward(
     key_states = key_states.transpose(1, 2)
     value_states = value_states.transpose(1, 2)
 
+    ## Replace flash attention forward with ulysses flash attention forward
     attn_output = _ulysses_flash_attention_forward(
         query_states,
         key_states,
