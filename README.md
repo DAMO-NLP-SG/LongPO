@@ -27,7 +27,7 @@ This repo provides the official implementation of our paper "LongPO: Long Contex
 
 2. Replace the (Flash) Attention module into Ulyssess (Flash) Attn using monkey patch to apply sequence parallel.
   
-3. Using our custom LongPO Trainer: `LongDPOFullMTJointUlyssesTrainer`
+3. Using our custom LongPO Trainer: `LongPOMTLMUlyssesTrainer`
 
 4. Train Script (using Mistral-7B-Instruct-v0.2 as example):
 
