@@ -1,18 +1,35 @@
 # LongPO: Long Context Self-Evolution of Large Language Models through Short-to-Long Preference Optimization
+This repo provides the official implementation of our paper "LongPO: Long Context Self-Evolution of Large Language Models through Short-to-Long Preference Optimization".
+
+<div style='display:flex; gap: 0.25rem; '>
+<!-- <a href='https://huggingface.co/DAMO-NLP-SG'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Checkpoint-blue'></a>  -->
+<a href=''><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Demo-blue'></a>
+<a href=''><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Paper-blue'></a>
+</div>
+
+
+## Updates
+- [2024.2.13]  🚀 Release the code, data and checkpoints trained with LongPO. 
+- [2025.1.23] 🌟 LongPO has been accepted to ICLR 2025!
+
+
+
+## Highlights of LongPO
+- Self-evolving long-context alignment without human/superior LLMs annotations.
+- Extending context length while aligning to be instruction-following in one stage.
+- No degradation on short-context capabilities.
+
+
 
 ## Training Process:
 
-1. Process the data, building the label for answer tokens and padding others.
-  
-2. Replace the Attention Module into Ulyssess Attn using monkey patch.
-  
-3. Replace the Trainer class into our custom Ulysses Trainer.
-  
-  - LongPO Trainer: `LongDPOFullMTJointUlyssesTrainer`
-    
-  - SFT Trainer using Ulysses: `LongSFTKLJointUlyssesTrainer`: Note that this Trainer uses our LongPO data format with a custom KL divergence. To access the naive SFT loss, refer to the chosen lm loss [here](https://github.com/DAMO-NLP-SG/LongPO/blob/e3ecf0c5a83ca540ee8957fb47fd16575db55a47/train/longdpo_trainer.py#L3002).
+1. Prompt a short-context instruct LLM (e.g., Mistral-7B-Instruct-v0.2) to self-generate short-to-long preference data as illustrated in [data_prepare]().
 
-4. Train Script:
+2. Replace the (Flash) Attention module into Ulyssess (Flash) Attn using monkey patch to apply sequence parallel.
+  
+3. Using our custom LongPO Trainer: `LongDPOFullMTJointUlyssesTrainer`
+
+4. Train Script (using Mistral-7B-Instruct-v0.2 as example):
 
 ```
 
@@ -23,13 +40,13 @@ export batch_size=1
 accelerate launch \
 --config_file playground/accelerate_single_node_zero3.yaml \
 train/train_longpo.py \
-    --model_name_or_path /path/to/model \
-    --ref_model_name_or_path /path/to/model \
+    --model_name_or_path mistralai/Mistral-7B-Instruct-v0.2 \
+    --ref_model_name_or_path mistralai/Mistral-7B-Instruct-v0.2 \
     --data_path /path/to/data \
     --bf16 True \
-    --run_name xxxx \
+    --run_name mistral_longpo \
     --report_to wandb \
-    --output_dir xxxx \
+    --output_dir path/to/save \
     --num_train_epochs 1 \
     --per_device_train_batch_size $batch_size \
     --gradient_accumulation_steps $gradient_accumulation_steps \
