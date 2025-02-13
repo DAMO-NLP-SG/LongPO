@@ -16,7 +16,7 @@ This repo provides the official implementation of our paper "LongPO: Long Contex
 
 ## Highlights of LongPO
 - Self-evolving long-context alignment without human/superior LLMs annotations.
-- Extending context length while aligning to be instruction-following in one stage.
+- Extending context length while keeping aligned in one stage.
 - No degradation on short-context capabilities.
 
 
