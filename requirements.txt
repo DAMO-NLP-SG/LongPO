@@ -1,0 +1,3 @@
+transformers 
+flash-attn
+trl == 0.8.6

@@ -16,8 +16,6 @@ import logging
 import datasets
 import wandb
 logger = logging.getLogger(__name__)
-from trl import SFTTrainer
-from ring_trainer import RingSFTTrainer
 from datasets import load_dataset, load_from_disk
 
 IGNORE_TOKEN_ID = LabelSmoother.ignore_index

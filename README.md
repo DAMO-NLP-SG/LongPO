@@ -66,17 +66,16 @@ train/train_longpo.py \
     --do_eval False \
     --do_predict False \
     --seed 42 \
-    --use_ring_attention True \
+    --use_sequence_parallel True \
     --dpo_beta 0.01 \
     --dpo_lambda 0.01 \
     --rope_theta 10000000
 ```
 
 
-## Requirments
+## Results
 
-```
-transformers >= 4.44.0
-flash-attn
-trl == 0.8.6
-```
+
+
+
+
