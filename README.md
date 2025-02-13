@@ -23,7 +23,7 @@ This repo provides the official implementation of our paper "LongPO: Long Contex
 
 ## Training Process:
 
-1. Prompt a short-context instruct LLM (e.g., Mistral-7B-Instruct-v0.2) to self-generate short-to-long preference data as illustrated in [data_prepare]().
+1. Prompt a short-context instruct LLM (e.g., Mistral-7B-Instruct-v0.2) to self-generate short-to-long preference data as illustrated in [data_prepare](data_prepare/readme.md).
 
 2. Replace the (Flash) Attention module into Ulyssess (Flash) Attn using monkey patch to apply sequence parallel.
   
