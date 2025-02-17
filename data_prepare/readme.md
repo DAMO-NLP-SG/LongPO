@@ -66,7 +66,7 @@ python3 data_prepare/generate_longpo_pairs.py \
         --world_size 16 \
         --rank 0
 ```
-
+- Please adjust the RoPE $$\theta$$ (if needed) before generating answers for long context.
 - You would collect splits of preference data for each rank.
   
 
