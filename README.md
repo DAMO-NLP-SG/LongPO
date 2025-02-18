@@ -27,8 +27,8 @@ This repo provides the official implementation of our paper "LongPO: Long Contex
 | ------------------------------------------------------------ | ------------------------ | ------------------------------------------------------------ | -------------- |
 | [Mistral-7B-LongPO-128K](https://huggingface.co/DAMO-NLP-SG/Mistral-7B-LongPO-128K) | Mistral-7B-Instruct-v0.2 | [HF Link](https://huggingface.co/datasets/DAMO-NLP-SG/Mistral-7B-LongPO-128K-tokenized) | 45K            |
 | [Qwen2.5-7B-LongPO-128K](https://huggingface.co/DAMO-NLP-SG/Qwen2.5-7B-LongPO-128K) | Qwen2.5-7B-Instruct      | [HF Link](https://huggingface.co/datasets/DAMO-NLP-SG/Qwen2.5-7B-LongPO-128K-tokenized) | 32K            |
-| [Mistral-7B-LongPO-256K-EXP](https://huggingface.co/DAMO-NLP-SG/Mistral-7B-LongPO-256K-EXP)* | Mistral-7B-LongPO-128K   | [HF Link]([https://huggingface.co/datasets/DAMO-NLP-SG/Mistral-7B-LongPO-256K-tokenized](https://huggingface.co/datasets/DAMO-NLP-SG/Mistral-7B-LongPO-128K-tokenized)) | 16K            |
-| [Mistral-7B-LongPO-512K-EXP](https://huggingface.co/DAMO-NLP-SG/Mistral-7B-LongPO-512K-EXP)* | Mistral-7B-LongPO-128K   | [HF Link]([https://huggingface.co/datasets/DAMO-NLP-SG/Mistral-7B-LongPO-512K-tokenized](https://huggingface.co/datasets/DAMO-NLP-SG/Mistral-7B-LongPO-128K-tokenized)) | 2.5K           |
+| [Mistral-7B-LongPO-256K-EXP](https://huggingface.co/DAMO-NLP-SG/Mistral-7B-LongPO-256K-EXP)* | Mistral-7B-LongPO-128K   | [HF Link](https://huggingface.co/datasets/DAMO-NLP-SG/Mistral-7B-LongPO-256K-tokenized) | 16K            |
+| [Mistral-7B-LongPO-512K-EXP](https://huggingface.co/DAMO-NLP-SG/Mistral-7B-LongPO-512K-EXP)* | Mistral-7B-LongPO-128K   | [HF Link](https://huggingface.co/datasets/DAMO-NLP-SG/Mistral-7B-LongPO-512K-tokenized) | 2.5K           |
 
 \* indicates an experimental version (for rebuttal purposes) that may have not been fully tuned or provided with sufficient data to achieve convergence.
 
