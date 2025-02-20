@@ -145,3 +145,16 @@ train/train_longpo.py \
 | Qwen2.5-7B-Instruct | 74.28 | 67.15 | 81.41 | 74.66 | 74.38 |
 | Qwen2.5-7B-LongPO-128K | 73.64 | 65.70 | 80.82 | 74.98 | 73.79 |
 
+
+## Citation
+If you find our project useful, hope you can star our repo and cite our paper as follows:
+```
+@inproceedings{
+    chen2025longpo,
+    title={Long{PO}: Long Context Self-Evolution of Large Language Models through Short-to-Long Preference Optimization},
+    author={Guanzheng Chen and Xin Li and Michael Shieh and Lidong Bing},
+    booktitle={The Thirteenth International Conference on Learning Representations},
+    year={2025},
+    url={https://openreview.net/forum?id=qTrEq31Shm}
+}
+```
