@@ -28,6 +28,10 @@ This repo provides the official implementation of our paper "LongPO: Long Contex
 - No degradation on short-context capabilities.
 
 
+<img width="1031" alt="image" src="https://github.com/user-attachments/assets/84f3c93f-909d-4ef7-a33a-107ca2deec42" />
+
+
+
 ## Models and Training Data
 
 | Models                                                       | Base Model               | Training Data                                                | # Data Samples |
