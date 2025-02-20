@@ -2,7 +2,6 @@
 
 This repo provides the official implementation of our paper "LongPO: Long Context Self-Evolution of Large Language Models through Short-to-Long Preference Optimization".
 
-http://arxiv.org/abs/2502.13922
 
 
 <h5 align="left">
