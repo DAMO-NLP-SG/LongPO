@@ -5,7 +5,7 @@ This repo provides the official implementation of our paper "LongPO: Long Contex
 http://arxiv.org/abs/2502.13922
 
 
-<h5 align="center">
+<h5 align="left">
 
 [![arXiv](https://img.shields.io/badge/Arxiv-2501.13106-AD1C18.svg?logo=arXiv)](http://arxiv.org/abs/2502.13922) 
 [![hf_paper](https://img.shields.io/badge/🤗-HF%20Daily-red.svg)](https://huggingface.co/papers/2502.13922)
