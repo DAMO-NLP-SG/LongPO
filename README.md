@@ -149,7 +149,7 @@ train/train_longpo.py \
 
 | Model | MMLU | ARC-C | Hellaswag | Winogrande | Avg |
 |-------|-------|--------|------------|-------------|-----|
-| Mistral-7B-Instruction-v0.2 | 59.15 | 59.26 | 83.2 | 78.4 | 70.00 |
+| Mistral-7B-Instruct-v0.2 | 59.15 | 59.26 | 83.2 | 78.4 | 70.00 |
 | Mistral-7B-LongPO-128K | 59.99 | 59.34 | 82.99 | 78.53 | 70.21 |
 | Mistral-7B-LongPO-256K-EXP | 59.47 | 60.28 | 83.14 | 78.14 | 70.26 |
 | Mistral-7B-LongPO-512K-EXP | 59.51 | 60.58 | 82.87 | 77.66 | 70.16 |
