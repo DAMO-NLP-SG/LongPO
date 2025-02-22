@@ -89,7 +89,7 @@ python3 data_prepare/merge_datasets.py \
 
 ### Data Format Illustration
 
-```json
+```markdown
 - chosen_input_ids: [long context + multi-turn query and chosen responses.]
 
 - rejected_input_ids: [long context + multi-turn query and rejected responses.]
